@@ -1,6 +1,6 @@
 package main
 
-import "github.com/selectel/external-dns-stackit-webhook/cmd/webhook/cmd"
+import "github.com/selectel/external-dns-selectel-webhook/cmd/webhook/cmd"
 
 func main() {
 	err := cmd.Execute()

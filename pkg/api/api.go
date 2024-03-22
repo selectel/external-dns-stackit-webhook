@@ -15,7 +15,7 @@ import (
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/selectel/external-dns-stackit-webhook/pkg/metrics"
+	"github.com/selectel/external-dns-selectel-webhook/pkg/metrics"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/provider"
 )

@@ -1,14 +1,14 @@
 # Selectel Webhook - ExternalDNS
 
 [![GoTemplate](https://img.shields.io/badge/go/template-black?logo=go)](https://github.com/golang-standards/project-layout)
-[![CI](https://github.com/selectel/external-dns-stackit-webhook/actions/workflows/main.yml/badge.svg)](https://github.com/selectel/external-dns-stackit-webhook/actions/workflows/main.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/selectel/external-dns-stackit-webhook)](https://goreportcard.com/report/github.com/selectel/external-dns-stackit-webhook)
-[![GitHub release](https://img.shields.io/github/release/selectel/external-dns-stackit-webhook.svg)](https://github.com/selectel/external-dns-stackit-webhook/releases)
-[![Last Commit](https://img.shields.io/github/last-commit/selectel/external-dns-stackit-webhook/main.svg)](https://github.com/selectel/external-dns-stackit-webhook/commits/main)
-[![GitHub issues](https://img.shields.io/github/issues/selectel/external-dns-stackit-webhook.svg)](https://github.com/selectel/external-dns-stackit-webhook/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/selectel/external-dns-stackit-webhook.svg)](https://github.com/selectel/external-dns-stackit-webhook/pulls)
-[![GitHub stars](https://img.shields.io/github/stars/selectel/external-dns-stackit-webhook.svg?style=social&label=Star&maxAge=2592000)](https://github.com/selectel/external-dns-stackit-webhook/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/selectel/external-dns-stackit-webhook.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/selectel/external-dns-stackit-webhook/network)
+[![CI](https://github.com/selectel/external-dns-selectel-webhook/actions/workflows/main.yml/badge.svg)](https://github.com/selectel/external-dns-selectel-webhook/actions/workflows/main.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/selectel/external-dns-selectel-webhook)](https://goreportcard.com/report/github.com/selectel/external-dns-selectel-webhook)
+[![GitHub release](https://img.shields.io/github/release/selectel/external-dns-selectel-webhook.svg)](https://github.com/selectel/external-dns-selectel-webhook/releases)
+[![Last Commit](https://img.shields.io/github/last-commit/selectel/external-dns-selectel-webhook/main.svg)](https://github.com/selectel/external-dns-selectel-webhook/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/selectel/external-dns-selectel-webhook.svg)](https://github.com/selectel/external-dns-selectel-webhook/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/selectel/external-dns-selectel-webhook.svg)](https://github.com/selectel/external-dns-selectel-webhook/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/selectel/external-dns-selectel-webhook.svg?style=social&label=Star&maxAge=2592000)](https://github.com/selectel/external-dns-selectel-webhook/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/selectel/external-dns-selectel-webhook.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/selectel/external-dns-selectel-webhook/network)
 
 ExternalDNS serves as an add-on for Kubernetes designed to automate the management of Domain Name System (DNS)
 records for Kubernetes services by utilizing various DNS providers. While Kubernetes traditionally manages DNS
@@ -24,7 +24,7 @@ to create and read dns zones, and finally, establish a Selectel zone.
 ## Kubernetes Deployment
 
 The Selectel webhook is presented as a standard Open Container Initiative (OCI) image released in the
-[GitHub container registry](https://github.com/selectel/external-dns-stackit-webhook/pkgs/container/external-dns-stackit-webhook).
+[GitHub container registry](https://github.com/selectel/external-dns-selectel-webhook/pkgs/container/external-dns-selectel-webhook).
 The deployment is compatible with all Kubernetes-supported methods. The subsequent example
 demonstrates the deployment as a
 [sidecar container](https://kubernetes.io/docs/concepts/workloads/pods/#workload-resources-for-managing-pods)
@@ -175,7 +175,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 65534
-          image: ghcr.io/selectel/external-dns-stackit-webhook:v0.1.0
+          image: ghcr.io/selectel/external-dns-selectel-webhook:v0.1.0
           imagePullPolicy: IfNotPresent
           args:
             - --project-id=c158c736-0300-4044-95c4-b7d404279b35 # your project id

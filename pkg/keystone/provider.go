@@ -3,7 +3,7 @@ package keystone
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/selectel/external-dns-stackit-webhook/pkg/httpdefault"
+	"github.com/selectel/external-dns-selectel-webhook/pkg/httpdefault"
 	"go.uber.org/zap"
 )
 

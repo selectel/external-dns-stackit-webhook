@@ -2,7 +2,7 @@ GOLANGCI_VERSION = 1.53.3
 LICENCES_IGNORE_LIST = $(shell cat licenses/licenses-ignore-list.txt)
 
 VERSION ?= 0.0.1
-IMAGE_TAG_BASE ?= selectel/external-dns-stackit-webhook
+IMAGE_TAG_BASE ?= selectel/external-dns-selectel-webhook
 IMG ?= $(IMAGE_TAG_BASE):$(VERSION)
 
 BUILD_VERSION ?= $(shell git branch --show-current)
@@ -17,7 +17,7 @@ download:
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 go build -ldflags "-s -w" -o ./bin/external-dns-stackit-webhook -v cmd/webhook/main.go
+	CGO_ENABLED=0 go build -ldflags "-s -w" -o ./bin/external-dns-selectel-webhook -v cmd/webhook/main.go
 
 .PHONY: docker-build
 docker-build:
@@ -67,7 +67,7 @@ $(GO_RELEASER):
 
 .PHONY: release-check
 release-check: $(GO_RELEASER) ## Check if the release will work
-	GITHUB_SERVER_URL=github.com GITHUB_REPOSITORY=stackitcloud/external-dns-stackit-webhook REGISTRY=$(REGISTRY) IMAGE_NAME=$(IMAGE_NAME) $(GO_RELEASER) release --snapshot --clean --skip-publish
+	GITHUB_SERVER_URL=github.com GITHUB_REPOSITORY=selectel/external-dns-selectel-webhook REGISTRY=$(REGISTRY) IMAGE_NAME=$(IMAGE_NAME) $(GO_RELEASER) release --snapshot --clean --skip-publish
 
 GO_LICENSES = bin/go-licenses
 $(GO_LICENSES):
