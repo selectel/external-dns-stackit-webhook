@@ -159,6 +159,7 @@ func TestZoneEndpoint403Records(t *testing.T) {
 }
 
 func getDefaultKeystoneProvider(t *testing.T, callTimes int) KeystoneProvider {
+	t.Helper()
 	ctrl := gomock.NewController(t)
 	t.Cleanup(ctrl.Finish)
 

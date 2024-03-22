@@ -11,6 +11,7 @@ func defaultOSClient(endpoint string) (*gophercloud.ProviderClient, error) {
 	client, err := openstack.NewClient(endpoint)
 	client.HTTPClient = httpclient.Default()
 	client.UserAgent.Prepend(httpclient.DefaultUserAgent)
+
 	return client, err
 }
 
@@ -57,6 +58,7 @@ func (p Provider) GetToken() (string, error) {
 	client, err := defaultOSClient(p.credentials.IdentityEndpoint)
 	if err != nil {
 		p.logger.Error("error during creating default openstack client", zap.Error(err))
+
 		return "", err
 	}
 	err = openstack.Authenticate(client, opts)

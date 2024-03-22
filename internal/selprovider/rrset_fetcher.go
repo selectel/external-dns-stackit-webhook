@@ -12,7 +12,6 @@ import (
 
 type rrSetFetcher struct {
 	domainFilter endpoint.DomainFilter
-	projectId    string
 	logger       *zap.Logger
 }
 

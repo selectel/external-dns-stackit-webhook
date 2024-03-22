@@ -236,7 +236,7 @@ func getChangeTypeChanges(changeType ChangeType) *plan.Changes {
 	}
 }
 
-func getApplyChangesBasicTestCases( //nolint:funlen // Test cases are long
+func getApplyChangesBasicTestCases(
 	validZoneResponse []byte,
 	validRRSetResponse []byte,
 	invalidZoneResponse []byte,

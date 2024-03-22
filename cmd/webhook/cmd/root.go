@@ -37,7 +37,12 @@ var rootCmd = &cobra.Command{
 	Long:  "provider webhook for the Selectel DNS service",
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := getLogger()
-		defer logger.Sync()
+		defer func(logger *zap.Logger) {
+			err := logger.Sync()
+			if err != nil {
+				log.Printf("Synchronization of logs failed with error: %v", err)
+			}
+		}(logger)
 
 		endpointDomainFilter := endpoint.DomainFilter{Filters: domainFilter}
 

@@ -23,11 +23,12 @@ type Provider struct {
 	rrSetFetcherClient *rrSetFetcher
 }
 
-// getDomainsClient returns v2.DNSClient with provided keystone and user-agent from httpclient.DefaultUserAgent
+// getDomainsClient returns v2.DNSClient with provided keystone and user-agent from httpclient.DefaultUserAgent.
 func (p *Provider) getDomainsClient() (domains.DNSClient[domains.Zone, domains.RRSet], error) {
 	token, err := p.keystoneProvider.GetToken()
 	if err != nil {
 		p.logger.Error("authorization error during getting keystone token", zap.Error(err))
+
 		return nil, err
 	}
 
@@ -35,6 +36,7 @@ func (p *Provider) getDomainsClient() (domains.DNSClient[domains.Zone, domains.R
 	headers := http.Header{}
 	headers.Add("X-Auth-Token", token)
 	headers.Add("User-Agent", httpclient.DefaultUserAgent)
+
 	return domains.NewClient(p.endpoint, &httpClient, headers), nil
 }
 
