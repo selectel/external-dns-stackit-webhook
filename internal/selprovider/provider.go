@@ -1,10 +1,8 @@
 package selprovider
 
 import (
-	"net/http"
-
 	domains "github.com/selectel/domains-go/pkg/v2"
-	"github.com/selectel/external-dns-stackit-webhook/pkg/httpclient"
+	"github.com/selectel/external-dns-stackit-webhook/pkg/httpdefault"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
 	"sigs.k8s.io/external-dns/provider"
@@ -23,7 +21,7 @@ type Provider struct {
 	rrSetFetcherClient *rrSetFetcher
 }
 
-// getDomainsClient returns v2.DNSClient with provided keystone and user-agent from httpclient.DefaultUserAgent.
+// getDomainsClient returns v2.DNSClient with provided keystone and user-agent from httpdefault.UserAgent.
 func (p *Provider) getDomainsClient() (domains.DNSClient[domains.Zone, domains.RRSet], error) {
 	token, err := p.keystoneProvider.GetToken()
 	if err != nil {
@@ -32,10 +30,9 @@ func (p *Provider) getDomainsClient() (domains.DNSClient[domains.Zone, domains.R
 		return nil, err
 	}
 
-	httpClient := httpclient.Default()
-	headers := http.Header{}
+	httpClient := httpdefault.Client()
+	headers := httpdefault.Headers()
 	headers.Add("X-Auth-Token", token)
-	headers.Add("User-Agent", httpclient.DefaultUserAgent)
 
 	return domains.NewClient(p.endpoint, &httpClient, headers), nil
 }

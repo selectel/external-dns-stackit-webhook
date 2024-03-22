@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/external-dns/plan"
 )
 
-// ApplyChanges applies a given set of changes in a given zone.
+// ApplyChanges applies a given set of changes.
 func (p *Provider) ApplyChanges(ctx context.Context, changes *plan.Changes) error {
 	client, err := p.getDomainsClient()
 	if err != nil {
@@ -48,12 +48,74 @@ func (p *Provider) createRRSets(
 		return nil
 	}
 
+	return p.handleRRSetWithWorkers(ctx, client, endpoints, CREATE)
+}
+
+// updateRRSets patches (overrides) contents in the record sets for the given endpoints that are in the update new field.
+func (p *Provider) updateRRSets(
+	ctx context.Context,
+	client domains.DNSClient[domains.Zone, domains.RRSet],
+	endpoints []*endpoint.Endpoint,
+) error {
+	if len(endpoints) == 0 {
+		return nil
+	}
+
+	return p.handleRRSetWithWorkers(ctx, client, endpoints, UPDATE)
+}
+
+// deleteRRSets delete record sets for the given endpoints that are in the deletion field.
+func (p *Provider) deleteRRSets(
+	ctx context.Context,
+	client domains.DNSClient[domains.Zone, domains.RRSet],
+	endpoints []*endpoint.Endpoint,
+) error {
+	if len(endpoints) == 0 {
+		p.logger.Debug("no endpoints to delete")
+
+		return nil
+	}
+
+	p.logger.Info("records to delete", zap.String("records", fmt.Sprintf("%v", endpoints)))
+
+	return p.handleRRSetWithWorkers(ctx, client, endpoints, DELETE)
+}
+
+// handleRRSetWithWorkers handles the given endpoints with workers to optimize speed.
+func (p *Provider) handleRRSetWithWorkers(
+	ctx context.Context,
+	client domains.DNSClient[domains.Zone, domains.RRSet],
+	endpoints []*endpoint.Endpoint,
+	action string,
+) error {
 	zones, err := p.zoneFetcherClient.zones(ctx, client)
 	if err != nil {
 		return err
 	}
 
-	return p.handleRRSetWithWorkers(ctx, client, endpoints, zones, CREATE)
+	workerChannel := make(chan changeTask, len(endpoints))
+	defer close(workerChannel)
+	errorChannel := make(chan error, len(endpoints))
+
+	for i := 0; i < p.workers; i++ {
+		go p.changeWorker(ctx, client, workerChannel, errorChannel, zones)
+	}
+
+	for _, change := range endpoints {
+		workerChannel <- changeTask{
+			action: action,
+			change: change,
+		}
+	}
+
+	for i := 0; i < len(endpoints); i++ {
+		err := <-errorChannel
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // createRRSet creates a new record set for the given endpoint.
@@ -94,24 +156,6 @@ func (p *Provider) createRRSet(
 	return nil
 }
 
-// updateRRSets patches (overrides) contents in the record sets for the given endpoints that are in the update new field.
-func (p *Provider) updateRRSets(
-	ctx context.Context,
-	client domains.DNSClient[domains.Zone, domains.RRSet],
-	endpoints []*endpoint.Endpoint,
-) error {
-	if len(endpoints) == 0 {
-		return nil
-	}
-
-	zones, err := p.zoneFetcherClient.zones(ctx, client)
-	if err != nil {
-		return err
-	}
-
-	return p.handleRRSetWithWorkers(ctx, client, endpoints, zones, UPDATE)
-}
-
 // updateRRSet patches (overrides) contents in the record set.
 func (p *Provider) updateRRSet(
 	ctx context.Context,
@@ -149,28 +193,6 @@ func (p *Provider) updateRRSet(
 	return nil
 }
 
-// deleteRRSets delete record sets for the given endpoints that are in the deletion field.
-func (p *Provider) deleteRRSets(
-	ctx context.Context,
-	client domains.DNSClient[domains.Zone, domains.RRSet],
-	endpoints []*endpoint.Endpoint,
-) error {
-	if len(endpoints) == 0 {
-		p.logger.Debug("no endpoints to delete")
-
-		return nil
-	}
-
-	p.logger.Info("records to delete", zap.String("records", fmt.Sprintf("%v", endpoints)))
-
-	zones, err := p.zoneFetcherClient.zones(ctx, client)
-	if err != nil {
-		return err
-	}
-
-	return p.handleRRSetWithWorkers(ctx, client, endpoints, zones, DELETE)
-}
-
 // deleteRRSet deletes a record set for the given endpoint.
 func (p *Provider) deleteRRSet(
 	ctx context.Context,
@@ -202,39 +224,6 @@ func (p *Provider) deleteRRSet(
 	}
 
 	p.logger.Info("delete record set successfully", logFields...)
-
-	return nil
-}
-
-// handleRRSetWithWorkers handles the given endpoints with workers to optimize speed.
-func (p *Provider) handleRRSetWithWorkers(
-	ctx context.Context,
-	client domains.DNSClient[domains.Zone, domains.RRSet],
-	endpoints []*endpoint.Endpoint,
-	zones []*domains.Zone,
-	action string,
-) error {
-	workerChannel := make(chan changeTask, len(endpoints))
-	defer close(workerChannel)
-	errorChannel := make(chan error, len(endpoints))
-
-	for i := 0; i < p.workers; i++ {
-		go p.changeWorker(ctx, client, workerChannel, errorChannel, zones)
-	}
-
-	for _, change := range endpoints {
-		workerChannel <- changeTask{
-			action: action,
-			change: change,
-		}
-	}
-
-	for i := 0; i < len(endpoints); i++ {
-		err := <-errorChannel
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }
