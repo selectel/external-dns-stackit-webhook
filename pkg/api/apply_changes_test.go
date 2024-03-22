@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stackitcloud/external-dns-stackit-webhook/pkg/api"
-	mock_provider "github.com/stackitcloud/external-dns-stackit-webhook/pkg/api/mock"
+	"github.com/selectel/external-dns-webhook/pkg/api"
+	mock_provider "github.com/selectel/external-dns-webhook/pkg/api/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"

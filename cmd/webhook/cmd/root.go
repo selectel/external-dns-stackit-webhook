@@ -5,67 +5,62 @@ import (
 	"log"
 	"strings"
 
+	"github.com/selectel/external-dns-webhook/internal/selprovider"
+	"github.com/selectel/external-dns-webhook/pkg/api"
+	"github.com/selectel/external-dns-webhook/pkg/keystone"
+	"github.com/selectel/external-dns-webhook/pkg/metrics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/stackitcloud/external-dns-stackit-webhook/internal/stackitprovider"
-	"github.com/stackitcloud/external-dns-stackit-webhook/pkg/api"
-	"github.com/stackitcloud/external-dns-stackit-webhook/pkg/metrics"
-	"github.com/stackitcloud/external-dns-stackit-webhook/pkg/stackit"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
 var (
-	apiPort         string
-	authBearerToken string
-	authKeyPath     string
-	baseUrl         string
-	projectID       string
-	worker          int
-	domainFilter    []string
-	dryRun          bool
-	logLevel        string
+	authorizationURL string
+	accountID        string
+	username         string
+	password         string
+	projectID        string
+	apiPort          string
+	baseURL          string
+	worker           int
+	domainFilter     []string
+	dryRun           bool
+	logLevel         string
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "external-dns-stackit-webhook",
-	Short: "provider webhook for the STACKIT DNS service",
-	Long:  "provider webhook for the STACKIT DNS service",
+	Use:   "external-dns-selectel-webhook",
+	Short: "provider webhook for the Selectel DNS service",
+	Long:  "provider webhook for the Selectel DNS service",
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := getLogger()
-		defer func(logger *zap.Logger) {
-			err := logger.Sync()
-			if err != nil {
-				log.Println(err)
-			}
-		}(logger)
+		defer logger.Sync()
 
 		endpointDomainFilter := endpoint.DomainFilter{Filters: domainFilter}
 
-		stackitConfigOptions, err := stackit.SetConfigOptions(baseUrl, authBearerToken, authKeyPath)
+		keystoneProvider := keystone.NewProvider(logger, keystone.Credentials{
+			IdentityEndpoint: authorizationURL,
+			AccountID:        accountID,
+			ProjectID:        projectID,
+			Username:         username,
+			Password:         password,
+		})
+
+		selProvider, err := selprovider.New(selprovider.Config{
+			BaseURL:          baseURL,
+			KeystoneProvider: keystoneProvider,
+			DomainFilter:     endpointDomainFilter,
+			DryRun:           dryRun,
+			Workers:          worker,
+		}, logger.With(zap.String("component", "selprovider")))
 		if err != nil {
 			panic(err)
 		}
 
-		stackitProvider, err := stackitprovider.NewStackitDNSProvider(
-			logger.With(zap.String("component", "stackitprovider")),
-			// ExternalDNS provider config
-			stackitprovider.Config{
-				ProjectId:    projectID,
-				DomainFilter: endpointDomainFilter,
-				DryRun:       dryRun,
-				Workers:      worker,
-			},
-			// STACKIT client SDK config
-			stackitConfigOptions...,
-		)
-		if err != nil {
-			panic(err)
-		}
-
-		app := api.New(logger.With(zap.String("component", "api")), metrics.NewHttpApiMetrics(), stackitProvider)
+		app := api.New(logger.With(zap.String("component", "api")), metrics.NewHttpApiMetrics(), selProvider)
 		err = app.Listen(apiPort)
 		if err != nil {
 			panic(err)
@@ -78,6 +73,7 @@ func getLogger() *zap.Logger {
 		Level:    zap.NewAtomicLevelAt(getZapLogLevel()),
 		Encoding: "json", // or "console"
 		// ... other zap configuration as needed
+		EncoderConfig:    zap.NewProductionEncoderConfig(),
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 	}
@@ -113,17 +109,19 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&apiPort, "api-port", "8888", "Specifies the port to listen on.")
-	rootCmd.PersistentFlags().StringVar(&authBearerToken, "auth-token", "", "Defines the authentication token for the STACKIT API. Mutually exclusive with 'auth-key-path'.")
-	rootCmd.PersistentFlags().StringVar(&authKeyPath, "auth-key-path", "", "Defines the file path of the service account key for the STACKIT API. Mutually exclusive with 'auth-token'.")
-	rootCmd.PersistentFlags().StringVar(&baseUrl, "base-url", "https://dns.api.stackit.cloud", " Identifies the Base URL for utilizing the API.")
-	rootCmd.PersistentFlags().StringVar(&projectID, "project-id", "", "Specifies the project id of the STACKIT project.")
+	rootCmd.PersistentFlags().StringVar(&baseURL, "base-url", "https://api.selectel.ru/domains/v2", "Identifies the Base URL for utilizing the API.")
+	rootCmd.PersistentFlags().StringVar(&projectID, "project-id", "", "Specifies the project id to authorize.")
+	rootCmd.PersistentFlags().StringVar(&accountID, "account-id", "", "Specifies the account id to authorize.")
+	rootCmd.PersistentFlags().StringVar(&authorizationURL, "auth-url", "https://cloud.api.selcloud.ru/identity/v3", "Identifies the URL for utilizing the API to receive keystone-token.")
+	rootCmd.PersistentFlags().StringVar(&username, "username", "", "Specifies the username of service user to authorize.")
+	rootCmd.PersistentFlags().StringVar(&password, "password", "", "Specifies the password of service user to authorize.")
 	rootCmd.PersistentFlags().IntVar(&worker, "worker", 10, "Specifies the number "+
 		"of workers to employ for querying the API. Given that we need to iterate over all zones and "+
 		"records, it can be parallelized. However, it is important to avoid setting this number "+
 		"excessively high to prevent receiving 429 rate limiting from the API.")
-	rootCmd.PersistentFlags().StringArrayVar(&domainFilter, "domain-filter", []string{}, "Establishes a filter for DNS zone names")
+	rootCmd.PersistentFlags().StringArrayVar(&domainFilter, "domain-filter", []string{}, "Establishes a filter for DNS zone names.")
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Specifies whether to perform a dry run.")
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Specifies the log level. Possible values are: debug, info, warn, error")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Specifies the log level. Possible values are: debug, info, warn, error.")
 }
 
 func initConfig() {

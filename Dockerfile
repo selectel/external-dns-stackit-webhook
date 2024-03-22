@@ -1,5 +1,5 @@
 FROM gcr.io/distroless/static-debian11:nonroot
 
-COPY external-dns-stackit-webhook /external-dns-stackit-webhook
+COPY external-dns-webhook /external-dns-webhook
 
-ENTRYPOINT ["/external-dns-stackit-webhook"]
+ENTRYPOINT ["/external-dns-webhook"]

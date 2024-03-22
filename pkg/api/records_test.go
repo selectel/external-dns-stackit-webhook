@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/goccy/go-json"
-	"github.com/stackitcloud/external-dns-stackit-webhook/pkg/api"
-	mock_provider "github.com/stackitcloud/external-dns-stackit-webhook/pkg/api/mock"
+	"github.com/selectel/external-dns-webhook/pkg/api"
+	mock_provider "github.com/selectel/external-dns-webhook/pkg/api/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
