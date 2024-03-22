@@ -1,4 +1,4 @@
-module github.com/selectel/external-dns-webhook
+module github.com/selectel/external-dns-stackit-webhook
 
 go 1.20
 

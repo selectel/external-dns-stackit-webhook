@@ -5,10 +5,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/selectel/external-dns-webhook/internal/selprovider"
-	"github.com/selectel/external-dns-webhook/pkg/api"
-	"github.com/selectel/external-dns-webhook/pkg/keystone"
-	"github.com/selectel/external-dns-webhook/pkg/metrics"
+	"github.com/selectel/external-dns-stackit-webhook/internal/selprovider"
+	"github.com/selectel/external-dns-stackit-webhook/pkg/api"
+	"github.com/selectel/external-dns-stackit-webhook/pkg/keystone"
+	"github.com/selectel/external-dns-stackit-webhook/pkg/metrics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -32,7 +32,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "external-dns-selectel-webhook",
+	Use:   "external-dns-stackit-webhook",
 	Short: "provider webhook for the Selectel DNS service",
 	Long:  "provider webhook for the Selectel DNS service",
 	Run: func(cmd *cobra.Command, args []string) {

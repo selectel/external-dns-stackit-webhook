@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	domains "github.com/selectel/domains-go/pkg/v2"
-	"github.com/selectel/external-dns-webhook/pkg/httpclient"
+	"github.com/selectel/external-dns-stackit-webhook/pkg/httpclient"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
 	"sigs.k8s.io/external-dns/provider"

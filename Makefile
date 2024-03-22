@@ -2,8 +2,8 @@ GOLANGCI_VERSION = 1.53.3
 LICENCES_IGNORE_LIST = $(shell cat licenses/licenses-ignore-list.txt)
 
 VERSION ?= 0.0.1
-IMAGE_TAG_BASE ?= selectel/external-dns-webhook
-IMG ?= $(IMAGE_TAG_BASE)
+IMAGE_TAG_BASE ?= selectel/external-dns-stackit-webhook
+IMG ?= $(IMAGE_TAG_BASE):$(VERSION)
 
 BUILD_VERSION ?= $(shell git branch --show-current)
 BUILD_COMMIT ?= $(shell git rev-parse --short HEAD)
@@ -17,7 +17,7 @@ download:
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 go build -ldflags "-s -w" -o ./external-dns-webhook -v cmd/webhook/main.go
+	CGO_ENABLED=0 go build -ldflags "-s -w" -o ./bin/external-dns-stackit-webhook -v cmd/webhook/main.go
 
 .PHONY: docker-build
 docker-build:

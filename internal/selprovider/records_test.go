@@ -9,7 +9,7 @@ import (
 
 	"github.com/goccy/go-json"
 	domains "github.com/selectel/domains-go/pkg/v2"
-	mock_selprovider "github.com/selectel/external-dns-webhook/internal/selprovider/mock"
+	mock_selprovider "github.com/selectel/external-dns-stackit-webhook/internal/selprovider/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
