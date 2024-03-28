@@ -225,7 +225,9 @@ Below are the options that are available.
   need to iterate over all zones and records, it can be parallelized. However, it is important to avoid
   setting this number excessively high to prevent receiving 429 rate limiting from the API (default 10).
 - `--base-url`/`BASE_URL` (optional): Identifies the Base URL for utilizing the API (
-  default "https://api.selectel.ru/domains/v2").
+  default "https://api.selectel.ru/domains/v2"). The full list of Selectel API URLs you can see [here](https://developers.selectel.ru/docs/control-panel/urls/).
+- `--auth-url`/`AUTH_URL` (optional): Identifies the URL for utilizing the API to receive keystone-token (
+  default "https://cloud.api.selcloud.ru/identity/v3").
 - `--api-port`/`API_PORT` (optional): Specifies the port to listen on (default 8888).
 - `--domain-filter`/`DOMAIN_FILER` (optional): Establishes a filter for DNS zone names (default []).
 - `--dry-run`/`DRY_RUN` (optional): Specifies whether to perform a dry run (default false).
