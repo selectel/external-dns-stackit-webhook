@@ -71,8 +71,6 @@ func (p *Provider) deleteRRSets(
 	endpoints []*endpoint.Endpoint,
 ) error {
 	if len(endpoints) == 0 {
-		p.logger.Debug("no endpoints to delete")
-
 		return nil
 	}
 
