@@ -25,7 +25,7 @@ type Provider struct {
 func (p *Provider) getDomainsClient() (domains.DNSClient[domains.Zone, domains.RRSet], error) {
 	token, err := p.keystoneProvider.GetToken()
 	if err != nil {
-		p.logger.Error("authorization error during getting keystone token", zap.Error(err))
+		p.logger.Error("failed to get keystone token", zap.Error(err))
 
 		return nil, err
 	}

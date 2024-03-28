@@ -31,6 +31,13 @@ var (
 	logLevel         string
 )
 
+const (
+	// DefaultAuthURL represents default endpoint where keystone-token should be retrieved.
+	DefaultAuthURL = "https://cloud.api.selcloud.ru/identity/v3"
+	// DefaultDomainsURL represents default endpoint of Selectel DNS API.
+	DefaultDomainsURL = "https://api.selectel.ru/domains/v2"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "external-dns-selectel-webhook",
 	Short: "provider webhook for the Selectel DNS service",
@@ -114,10 +121,10 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&apiPort, "api-port", "8888", "Specifies the port to listen on.")
-	rootCmd.PersistentFlags().StringVar(&baseURL, "base-url", "https://api.selectel.ru/domains/v2", "Identifies the Base URL for utilizing the API.")
+	rootCmd.PersistentFlags().StringVar(&baseURL, "base-url", DefaultDomainsURL, "Identifies the Base URL for utilizing the API.")
 	rootCmd.PersistentFlags().StringVar(&projectID, "project-id", "", "Specifies the project id to authorize.")
 	rootCmd.PersistentFlags().StringVar(&accountID, "account-id", "", "Specifies the account id to authorize.")
-	rootCmd.PersistentFlags().StringVar(&authorizationURL, "auth-url", "https://cloud.api.selcloud.ru/identity/v3", "Identifies the URL for utilizing the API to receive keystone-token.")
+	rootCmd.PersistentFlags().StringVar(&authorizationURL, "auth-url", DefaultAuthURL, "Identifies the URL for utilizing the API to receive keystone-token.")
 	rootCmd.PersistentFlags().StringVar(&username, "username", "", "Specifies the username of service user to authorize.")
 	rootCmd.PersistentFlags().StringVar(&password, "password", "", "Specifies the password of service user to authorize.")
 	rootCmd.PersistentFlags().IntVar(&worker, "worker", 10, "Specifies the number "+

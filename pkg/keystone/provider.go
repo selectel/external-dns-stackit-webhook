@@ -1,10 +1,17 @@
 package keystone
 
 import (
+	"fmt"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/selectel/external-dns-selectel-webhook/pkg/httpdefault"
 	"go.uber.org/zap"
+)
+
+var (
+	errFailedCreateClientFmt  = "failed to create default openstack client: %w"
+	errAuthorizationFailedFmt = "authorization failed: %w"
 )
 
 func defaultOSClient(endpoint string) (*gophercloud.ProviderClient, error) {
@@ -34,7 +41,7 @@ type Provider struct {
 	credentials Credentials
 }
 
-// GetToken returns keystone token that may be used to authorize requests to Selectel API.
+// GetToken returns keystone token that may be used to authorize requests to Selectel API in the project scope.
 // It generates new token for each call.
 func (p Provider) GetToken() (string, error) {
 	p.logger.Info(
@@ -60,11 +67,15 @@ func (p Provider) GetToken() (string, error) {
 	if err != nil {
 		p.logger.Error("error during creating default openstack client", zap.Error(err))
 
-		return "", err
+		return "", fmt.Errorf(errFailedCreateClientFmt, err)
 	}
-	err = openstack.Authenticate(client, opts)
 
-	return client.Token(), err
+	err = openstack.Authenticate(client, opts)
+	if err != nil {
+		return "", fmt.Errorf(errAuthorizationFailedFmt, err)
+	}
+
+	return client.Token(), nil
 }
 
 func NewProvider(logger *zap.Logger, credentials Credentials) *Provider {

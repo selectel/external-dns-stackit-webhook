@@ -32,8 +32,8 @@ func (r *rrSetFetcher) fetchRecords(
 	zoneId string,
 	options map[string]string,
 ) ([]*domains.RRSet, error) {
-	options["limit"] = "1000"
-	options["offset"] = "0"
+	options[domainsOptionLimit] = defaultDomainsLimit
+	options[domainsOptionOffset] = defaultDomainsOffset
 
 	var rrSets []*domains.RRSet
 
@@ -45,7 +45,7 @@ func (r *rrSetFetcher) fetchRecords(
 
 		rrSets = append(rrSets, rrSetsResponse.GetItems()...)
 
-		options["offset"] = strconv.Itoa(rrSetsResponse.GetNextOffset())
+		options[domainsOptionOffset] = strconv.Itoa(rrSetsResponse.GetNextOffset())
 		if rrSetsResponse.GetNextOffset() == 0 {
 			break
 		}

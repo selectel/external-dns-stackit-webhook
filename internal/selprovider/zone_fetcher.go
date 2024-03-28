@@ -52,8 +52,8 @@ func (z *zoneFetcher) fetchZones(
 	client domains.DNSClient[domains.Zone, domains.RRSet],
 	options map[string]string,
 ) ([]*domains.Zone, error) {
-	options["limit"] = "1000"
-	options["offset"] = "0"
+	options[domainsOptionLimit] = defaultDomainsLimit
+	options[domainsOptionOffset] = defaultDomainsOffset
 
 	var zones []*domains.Zone
 
@@ -65,7 +65,7 @@ func (z *zoneFetcher) fetchZones(
 
 		zones = append(zones, zonesResponse.GetItems()...)
 
-		options["offset"] = strconv.Itoa(zonesResponse.GetNextOffset())
+		options[domainsOptionOffset] = strconv.Itoa(zonesResponse.GetNextOffset())
 		if zonesResponse.GetNextOffset() == 0 {
 			break
 		}
