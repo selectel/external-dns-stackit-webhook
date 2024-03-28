@@ -40,7 +40,7 @@ func TestApplyChanges(t *testing.T) {
 func testApplyChanges(t *testing.T, changeType ChangeType) {
 	t.Helper()
 	ctx := context.Background()
-	validZoneResponse := getValidResponseZoneALlBytes(t)
+	validZoneResponse := getValidResponseZoneAllBytes(t)
 	validRRSetResponse := getValidResponseRRSetAllBytes(t)
 	invalidZoneResponse := []byte(`{"invalid: "json"`)
 
@@ -83,7 +83,7 @@ func TestNoMatchingZoneFound(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	validZoneResponse := getValidResponseZoneALlBytes(t)
+	validZoneResponse := getValidResponseZoneAllBytes(t)
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
@@ -111,7 +111,7 @@ func TestNoRRSetFound(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	validZoneResponse := getValidResponseZoneALlBytes(t)
+	validZoneResponse := getValidResponseZoneAllBytes(t)
 	rrSets := getValidResponseRRSetAll()
 	rrSets.GetItems()[0].Name = "notfound.test.com"
 	validRRSetResponse, err := json.Marshal(rrSets)
@@ -327,7 +327,7 @@ func responseHandler(responseBody []byte, statusCode int) func(http.ResponseWrit
 	}
 }
 
-func getValidResponseZoneALlBytes(t *testing.T) []byte {
+func getValidResponseZoneAllBytes(t *testing.T) []byte {
 	t.Helper()
 
 	zones := getValidZoneResponseAll()
