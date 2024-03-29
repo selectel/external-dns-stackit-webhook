@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 		defer func(logger *zap.Logger) {
 			err := logger.Sync()
 			if err != nil {
-				log.Printf("Synchronization of logs failed with error: %v", err)
+				log.Printf("synchronization of logs failed with error: %v", err)
 			}
 		}(logger)
 
