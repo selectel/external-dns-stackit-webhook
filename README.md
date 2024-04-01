@@ -18,8 +18,7 @@ of your Selectel domains within your Kubernetes cluster using
 [ExternalDNS](https://github.com/kubernetes-sigs/external-dns).
 
 For utilizing ExternalDNS with Selectel, it is mandatory to establish a Selectel project, a service account
-within the project, generate an authentication token for the service account, authorize the service account
-to create and read dns zones, and finally, establish a Selectel zone.
+within the project, and finally, establish a Selectel zone.
 
 ## Kubernetes Deployment
 
@@ -215,7 +214,7 @@ EOF
 ## Configuration
 
 The configuration of the Selectel webhook can be accomplished through command line arguments and environment variables.
-Below are the options that are available.
+Below are the options that are available in format `--cli-argument`/`ENVIRONMENT_VARIABLE`.
 
 - `--project-id`/`PROJECT_ID` (required): Specifies the project id to authorize.
 - `--account-id`/`ACCOUNT_ID` (required): Specifies the account id to authorize.
@@ -224,10 +223,11 @@ Below are the options that are available.
 - `--worker`/`WORKER`  (optional): Specifies the number of workers to employ for querying the API. Given that we
   need to iterate over all zones and records, it can be parallelized. However, it is important to avoid
   setting this number excessively high to prevent receiving 429 rate limiting from the API (default 10).
-- `--base-url`/`BASE_URL` (optional): Identifies the Base URL for utilizing the API (
-  default "https://api.selectel.ru/domains/v2"). The full list of Selectel API URLs you can see [here](https://developers.selectel.ru/docs/control-panel/urls/).
-- `--auth-url`/`AUTH_URL` (optional): Identifies the URL for utilizing the API to receive keystone-token (
-  default "https://cloud.api.selcloud.ru/identity/v3").
+- `--base-url`/`BASE_URL` (optional): Identifies the Base URL for utilizing the API
+  (default "https://api.selectel.ru/domains/v2"). The full list of Selectel API URLs you can
+  see [here](https://developers.selectel.ru/docs/control-panel/urls/).
+- `--auth-url`/`AUTH_URL` (optional): Identifies the URL for utilizing the API to receive keystone-token
+  (default "https://cloud.api.selcloud.ru/identity/v3").
 - `--api-port`/`API_PORT` (optional): Specifies the port to listen on (default 8888).
 - `--domain-filter`/`DOMAIN_FILER` (optional): Establishes a filter for DNS zone names (default []).
 - `--dry-run`/`DRY_RUN` (optional): Specifies whether to perform a dry run (default false).
