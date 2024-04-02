@@ -72,7 +72,7 @@ func (r *rrSetFetcher) getRRSetForUpdateDeletion(
 	}
 
 	domainRrSets, err := r.fetchRecords(ctx, client, resultZone.ID, map[string]string{
-		"name": change.DNSName,
+		domainsOptionName: change.DNSName,
 	})
 	if err != nil {
 		return nil, nil, err

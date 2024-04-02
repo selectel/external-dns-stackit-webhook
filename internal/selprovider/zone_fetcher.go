@@ -35,7 +35,7 @@ func (z *zoneFetcher) zones(ctx context.Context, client domains.DNSClient[domain
 	// send one request per filter
 	for _, filter := range z.domainFilter.Filters {
 		zones, err := z.fetchZones(ctx, client, map[string]string{
-			"filter": filter,
+			domainsOptionFilter: filter,
 		})
 		if err != nil {
 			return nil, err
