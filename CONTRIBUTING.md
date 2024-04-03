@@ -9,7 +9,7 @@ Before opening a PR please read through this document.
 
 To contribute any code to this repository just do the following:
 
-1. Make sure you have current Go's version of the project installed
+1. Make sure you have a Go version installed that is similar to the version of this project
 2. Fork this repository
 3. Run `make build` to make sure everything's setup correctly
 4. Make your changes
