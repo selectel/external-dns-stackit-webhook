@@ -30,7 +30,7 @@ demonstrates the deployment as a
 within the ExternalDNS pod.
 
 ```shell 
-kubectl create secret generic external-dns-webhook --from-literal=password='<Service-User-Password>'
+kubectl create secret generic external-dns-selectel-webhook --from-literal=password='<Service-User-Password>'
 ```
 
 ```shell
@@ -206,7 +206,7 @@ spec:
             - name: PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: external-dns-webhook
+                  name: external-dns-selectel-webhook
                   key: password
 EOF
 ```
