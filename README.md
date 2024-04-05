@@ -18,7 +18,7 @@ of your Selectel domains within your Kubernetes cluster using
 [ExternalDNS](https://github.com/kubernetes-sigs/external-dns).
 
 For utilizing ExternalDNS with Selectel, it is mandatory to establish a Selectel project, a service account
-within the project, and finally, establish a Selectel zone.
+within the project, and finally, establish a domain zone.
 
 ## Kubernetes Deployment
 
