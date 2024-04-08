@@ -26,7 +26,7 @@ To contribute any code to this repository just do the following:
    > Using a nolint directive should only be used as a last resort.
 6. Open a PR and make sure the CI pipelines succeed.
    > Your PR needs to have a semantic title, which can look like: `type(scope) Short description`
-   > All available `scopes` & `types` are defined in [semantic.yml](https://github.com/stackitcloud/external-dns-selectel-webhook/blob/main/.github/semantic.yml)
+   > All available `scopes` & `types` are defined in [semantic.yml](https://github.com/selectel/external-dns-selectel-webhook/blob/main/.github/semantic.yml)
    >
    > An example PR tile for adding a new feature for the CLI would look like: `cli(feat) Add saving output to file`
 7. Wait for two of the maintainers to review your code and react to the comments.
