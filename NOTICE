@@ -3,7 +3,7 @@ Apache 2.0 Licensed Notice
 The Initial Developer of some parts of this project, which are copied from, derived from, or
 inspired by https://github.com/stackitcloud/external-dns-stackit-webhook is STACKIT Cloud (Schwarz IT KG) (http://www.stackit.de/en).
 
-This product includes software modified by Selectel (https://selectel.ru/en) at 2024 to work properly 
+This product includes software modified by Selectel (https://selectel.com) at 2024 to work properly 
 with Selectel DNS API. All of these file located in the directories:
 - /cmd/
 - /internal/
