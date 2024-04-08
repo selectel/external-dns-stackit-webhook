@@ -1,4 +1,4 @@
-package stackitprovider
+package selprovider
 
 import "sigs.k8s.io/external-dns/endpoint"
 
@@ -7,11 +7,6 @@ const (
 	UPDATE = "UPDATE"
 	DELETE = "DELETE"
 )
-
-// ErrorMessage is the error message returned by the API.
-type ErrorMessage struct {
-	Message string `json:"message"`
-}
 
 // changeTask is a task that is passed to the worker.
 type changeTask struct {

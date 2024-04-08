@@ -1,4 +1,4 @@
-package stackitprovider
+package selprovider
 
 import (
 	"testing"
@@ -13,9 +13,9 @@ func TestGetDomainFilter(t *testing.T) {
 	server := getServerRecords(t)
 	defer server.Close()
 
-	stackitDnsProvider, err := getDefaultTestProvider(server)
+	dnsProvider, err := getDefaultTestProvider(server, getDefaultKeystoneProvider(t, 0))
 	assert.NoError(t, err)
 
-	domainFilter := stackitDnsProvider.GetDomainFilter()
+	domainFilter := dnsProvider.GetDomainFilter()
 	assert.Equal(t, domainFilter, endpoint.DomainFilter{})
 }

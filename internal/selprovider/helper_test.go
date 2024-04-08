@@ -1,10 +1,10 @@
-package stackitprovider
+package selprovider
 
 import (
 	"reflect"
 	"testing"
 
-	stackitdnsclient "github.com/stackitcloud/stackit-sdk-go/services/dns"
+	domains "github.com/selectel/domains-go/pkg/v2"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
 )
@@ -59,7 +59,7 @@ func TestModifyChange(t *testing.T) {
 	}
 }
 
-func TestGetStackitRRSetRecordPost(t *testing.T) {
+func TestGetRRSetRecordPost(t *testing.T) {
 	t.Parallel()
 
 	change := &endpoint.Endpoint{
@@ -71,41 +71,41 @@ func TestGetStackitRRSetRecordPost(t *testing.T) {
 			"192.0.2.2",
 		},
 	}
-	expected := stackitdnsclient.CreateRecordSetPayload{
-		Name: pointerTo("test."),
-		Ttl:  pointerTo(int64(300)),
-		Type: pointerTo("A"),
-		Records: &[]stackitdnsclient.RecordPayload{
+	expected := &domains.RRSet{
+		Name: "test.",
+		TTL:  300,
+		Type: "A",
+		Records: []domains.RecordItem{
 			{
-				Content: pointerTo("192.0.2.1"),
+				Content: "192.0.2.1",
 			},
 			{
-				Content: pointerTo("192.0.2.2"),
+				Content: "192.0.2.2",
 			},
 		},
 	}
-	got := getStackitRecordSetPayload(change)
+	got := getRRSetRecord(change)
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("getStackitRRSetRecordPost() = %v, want %v", got, expected)
+		t.Errorf("getRRSetRecord() = %v, want %v", got, expected)
 	}
 }
 
 func TestFindBestMatchingZone(t *testing.T) {
 	t.Parallel()
 
-	zones := []stackitdnsclient.Zone{
-		{DnsName: pointerTo("foo.com")},
-		{DnsName: pointerTo("bar.com")},
-		{DnsName: pointerTo("baz.com")},
+	zones := []*domains.Zone{
+		{Name: "foo.com"},
+		{Name: "bar.com"},
+		{Name: "baz.com"},
 	}
 
 	tests := []struct {
 		name      string
 		rrSetName string
-		want      *stackitdnsclient.Zone
+		want      *domains.Zone
 		wantFound bool
 	}{
-		{"Matching Zone", "www.foo.com", &zones[0], true},
+		{"Matching Zone", "www.foo.com", zones[0], true},
 		{"No Matching Zone", "www.test.com", nil, false},
 	}
 
@@ -124,20 +124,20 @@ func TestFindBestMatchingZone(t *testing.T) {
 func TestFindRRSet(t *testing.T) {
 	t.Parallel()
 
-	rrSets := []stackitdnsclient.RecordSet{
-		{Name: pointerTo("www.foo.com"), Type: pointerTo("A")},
-		{Name: pointerTo("www.bar.com"), Type: pointerTo("A")},
-		{Name: pointerTo("www.baz.com"), Type: pointerTo("A")},
+	rrSets := []*domains.RRSet{
+		{Name: "www.foo.com", Type: "A"},
+		{Name: "www.bar.com", Type: "A"},
+		{Name: "www.baz.com", Type: "A"},
 	}
 
 	tests := []struct {
 		name       string
 		rrSetName  string
 		recordType string
-		want       *stackitdnsclient.RecordSet
+		want       *domains.RRSet
 		wantFound  bool
 	}{
-		{"Matching RRSet", "www.foo.com", "A", &rrSets[0], true},
+		{"Matching RRSet", "www.foo.com", "A", rrSets[0], true},
 		{"No Matching RRSet", "www.test.com", "A", nil, false},
 	}
 
@@ -179,38 +179,5 @@ func TestGetLogFields(t *testing.T) {
 
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("getLogFields() = %v, want %v", got, expected)
-	}
-}
-
-func TestGetStackitRRSetRecordPatch(t *testing.T) {
-	t.Parallel()
-
-	change := &endpoint.Endpoint{
-		DNSName:    "test.",
-		RecordTTL:  endpoint.TTL(300),
-		RecordType: "A",
-		Targets: endpoint.Targets{
-			"192.0.2.1",
-			"192.0.2.2",
-		},
-	}
-
-	expected := stackitdnsclient.PartialUpdateRecordSetPayload{
-		Name: pointerTo("test."),
-		Ttl:  pointerTo(int64(300)),
-		Records: &[]stackitdnsclient.RecordPayload{
-			{
-				Content: pointerTo("192.0.2.1"),
-			},
-			{
-				Content: pointerTo("192.0.2.2"),
-			},
-		},
-	}
-
-	got := getStackitPartialUpdateRecordSetPayload(change)
-
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("getStackitRRSetRecordPatch() = %v, want %v", got, expected)
 	}
 }

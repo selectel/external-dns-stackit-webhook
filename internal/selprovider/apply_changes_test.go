@@ -1,4 +1,4 @@
-package stackitprovider
+package selprovider
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	stackitdnsclient "github.com/stackitcloud/stackit-sdk-go/services/dns"
+	domains "github.com/selectel/domains-go/pkg/v2"
 	"github.com/stretchr/testify/assert"
 	"sigs.k8s.io/external-dns/endpoint"
 	"sigs.k8s.io/external-dns/plan"
@@ -63,13 +63,13 @@ func testApplyChanges(t *testing.T, changeType ChangeType) {
 
 			defer server.Close()
 
-			stackitDnsProvider, err := getDefaultTestProvider(server)
+			dnsProvider, err := getDefaultTestProvider(server, getDefaultKeystoneProvider(t, 1))
 			assert.NoError(t, err)
 
 			// Set up the changes according to the change type
 			changes := getChangeTypeChanges(changeType)
 
-			err = stackitDnsProvider.ApplyChanges(ctx, changes)
+			err = dnsProvider.ApplyChanges(ctx, changes)
 			if tt.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -92,7 +92,7 @@ func TestNoMatchingZoneFound(t *testing.T) {
 	// Set up common endpoint for all types of changes
 	setUpCommonEndpoints(mux, validZoneResponse, http.StatusOK)
 
-	stackitDnsProvider, err := getDefaultTestProvider(server)
+	dnsProvider, err := getDefaultTestProvider(server, getDefaultKeystoneProvider(t, 1))
 	assert.NoError(t, err)
 
 	changes := &plan.Changes{
@@ -103,7 +103,7 @@ func TestNoMatchingZoneFound(t *testing.T) {
 		Delete:    []*endpoint.Endpoint{},
 	}
 
-	err = stackitDnsProvider.ApplyChanges(ctx, changes)
+	err = dnsProvider.ApplyChanges(ctx, changes)
 	assert.Error(t, err)
 }
 
@@ -113,8 +113,7 @@ func TestNoRRSetFound(t *testing.T) {
 	ctx := context.Background()
 	validZoneResponse := getValidResponseZoneAllBytes(t)
 	rrSets := getValidResponseRRSetAll()
-	rrSet := *rrSets.RrSets
-	*rrSet[0].Name = "notfound.test.com"
+	rrSets.GetItems()[0].Name = "notfound.test.com"
 	validRRSetResponse, err := json.Marshal(rrSets)
 	assert.NoError(t, err)
 
@@ -126,11 +125,11 @@ func TestNoRRSetFound(t *testing.T) {
 	setUpCommonEndpoints(mux, validZoneResponse, http.StatusOK)
 
 	mux.HandleFunc(
-		"/v1/projects/1234/zones/1234/rrsets",
+		"/zones/1234/rrset",
 		responseHandler(validRRSetResponse, http.StatusOK),
 	)
 
-	stackitDnsProvider, err := getDefaultTestProvider(server)
+	dnsProvider, err := getDefaultTestProvider(server, getDefaultKeystoneProvider(t, 1))
 	assert.NoError(t, err)
 
 	changes := &plan.Changes{
@@ -139,13 +138,13 @@ func TestNoRRSetFound(t *testing.T) {
 		},
 	}
 
-	err = stackitDnsProvider.ApplyChanges(ctx, changes)
+	err = dnsProvider.ApplyChanges(ctx, changes)
 	assert.Error(t, err)
 }
 
 // setUpCommonEndpoints for all change types.
 func setUpCommonEndpoints(mux *http.ServeMux, responseZone []byte, responseZoneCode int) {
-	mux.HandleFunc("/v1/projects/1234/zones", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(responseZoneCode)
 		w.Write(responseZone)
@@ -165,24 +164,45 @@ func setUpChangeTypeEndpoints(
 	switch changeType {
 	case Create:
 		mux.HandleFunc(
-			"/v1/projects/1234/zones/1234/rrsets",
+			"/zones/1234/rrset",
 			responseHandler(responseRrset, responseRrsetCode),
 		)
-	case Update, Delete:
+	case Update:
 		mux.HandleFunc(
-			"/v1/projects/1234/zones/1234/rrsets/1234",
-			responseHandler(nil, responseRrsetCode),
+			"/zones/1234/rrset/1234",
+			responseHandler(responseRrset, responseRrsetCode),
 		)
 		mux.HandleFunc(
-			"/v1/projects/1234/zones/1234/rrsets",
+			"/zones/1234/rrset",
 			func(w http.ResponseWriter, r *http.Request) {
-				getRrsetsResponseRecordsNonPaged(t, w, "1234")
+				getRrsetsResponseRecords(t, w, "1234")
 			},
 		)
 		mux.HandleFunc(
-			"/v1/projects/1234/zones/5678/rrsets",
+			"/zones/5678/rrset",
 			func(w http.ResponseWriter, r *http.Request) {
-				getRrsetsResponseRecordsNonPaged(t, w, "5678")
+				getRrsetsResponseRecords(t, w, "5678")
+			},
+		)
+	case Delete:
+		responseCode := responseRrsetCode
+		if responseCode == http.StatusOK {
+			responseCode = http.StatusNoContent
+		}
+		mux.HandleFunc(
+			"/zones/1234/rrset/1234",
+			responseHandler(nil, responseCode),
+		)
+		mux.HandleFunc(
+			"/zones/1234/rrset",
+			func(w http.ResponseWriter, r *http.Request) {
+				getRrsetsResponseRecords(t, w, "1234")
+			},
+		)
+		mux.HandleFunc(
+			"/zones/5678/rrset",
+			func(w http.ResponseWriter, r *http.Request) {
+				getRrsetsResponseRecords(t, w, "5678")
 			},
 		)
 	}
@@ -243,7 +263,7 @@ func getApplyChangesBasicTestCases(
 			validZoneResponse,
 			http.StatusOK,
 			validRRSetResponse,
-			http.StatusAccepted,
+			http.StatusOK,
 			false,
 			http.MethodPost,
 		},
@@ -317,15 +337,13 @@ func getValidResponseZoneAllBytes(t *testing.T) []byte {
 	return validZoneResponse
 }
 
-func getValidZoneResponseAll() stackitdnsclient.ListZonesResponse {
-	return stackitdnsclient.ListZonesResponse{
-		ItemsPerPage: pointerTo(int64(10)),
-		Message:      pointerTo("success"),
-		TotalItems:   pointerTo(int64(2)),
-		TotalPages:   pointerTo(int64(1)),
-		Zones: &[]stackitdnsclient.Zone{
-			{Id: pointerTo("1234"), DnsName: pointerTo("test.com")},
-			{Id: pointerTo("5678"), DnsName: pointerTo("test2.com")},
+func getValidZoneResponseAll() domains.List[domains.Zone] {
+	return domains.List[domains.Zone]{
+		Count:      2,
+		NextOffset: 0,
+		Items: []*domains.Zone{
+			{ID: "1234", Name: "test.com"},
+			{ID: "5678", Name: "test2.com"},
 		},
 	}
 }
@@ -340,21 +358,20 @@ func getValidResponseRRSetAllBytes(t *testing.T) []byte {
 	return validRRSetResponse
 }
 
-func getValidResponseRRSetAll() stackitdnsclient.ListRecordSetsResponse {
-	return stackitdnsclient.ListRecordSetsResponse{
-		ItemsPerPage: pointerTo(int64(20)),
-		Message:      pointerTo("success"),
-		RrSets: &[]stackitdnsclient.RecordSet{
+func getValidResponseRRSetAll() domains.List[domains.RRSet] {
+	return domains.List[domains.RRSet]{
+		Count:      1,
+		NextOffset: 0,
+		Items: []*domains.RRSet{
 			{
-				Name: pointerTo("test.com"),
-				Type: pointerTo("A"),
-				Ttl:  pointerTo(int64(300)),
-				Records: &[]stackitdnsclient.Record{
-					{Content: pointerTo("1.2.3.4")},
+				ID:   "1234",
+				Name: "test.com.",
+				Type: "A",
+				TTL:  300,
+				Records: []domains.RecordItem{
+					{Content: "1.2.3.4"},
 				},
 			},
 		},
-		TotalItems: pointerTo(int64(2)),
-		TotalPages: pointerTo(int64(1)),
 	}
 }
