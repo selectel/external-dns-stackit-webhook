@@ -4,7 +4,7 @@ The Initial Developer of some parts of this project, which are copied from, deri
 inspired by https://github.com/stackitcloud/external-dns-stackit-webhook is STACKIT Cloud (Schwarz IT KG) (http://www.stackit.de/en).
 
 This product includes software modified by Selectel (https://selectel.com) at 2024 to work properly 
-with Selectel DNS API. All of these file located in the directories:
+with Selectel DNS API. All these files are located in the directories:
 - /cmd/
 - /internal/
 - /pkg/httpdefault/
