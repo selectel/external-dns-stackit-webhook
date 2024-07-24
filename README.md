@@ -177,7 +177,7 @@ spec:
           image: ghcr.io/selectel/external-dns-selectel-webhook:v0.1.0
           imagePullPolicy: IfNotPresent
           args:
-            - --project-id=c158c736-0300-4044-95c4-b7d404279b35 # your project id
+            - --project-id=4027de78158a410fb7c64c65af940f96 # your project id
             - --account-id=000000 # your account id
             - --username=Username # your service user's name
           ports:
