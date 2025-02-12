@@ -8,12 +8,13 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/selectel/external-dns-selectel-webhook/pkg/api"
-	mock_provider "github.com/selectel/external-dns-selectel-webhook/pkg/api/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
+
+	"github.com/selectel/external-dns-selectel-webhook/pkg/api"
+	mock_provider "github.com/selectel/external-dns-selectel-webhook/pkg/api/mock"
 )
 
 func TestWebhook_AdjustEndpoints(t *testing.T) {
@@ -37,7 +38,7 @@ func TestWebhook_AdjustEndpoints(t *testing.T) {
 				RecordType: "A",
 			},
 		}
-		mockProvider.EXPECT().AdjustEndpoints(endpoints).Return(endpoints).Times(1)
+		mockProvider.EXPECT().AdjustEndpoints(endpoints).Return(endpoints, nil).Times(1)
 
 		body, err := json.Marshal(endpoints)
 		assert.NoError(t, err)

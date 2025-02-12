@@ -19,6 +19,7 @@ import (
 type MockHttpApiMetrics struct {
 	ctrl     *gomock.Controller
 	recorder *MockHttpApiMetricsMockRecorder
+	isgomock struct{}
 }
 
 // MockHttpApiMetricsMockRecorder is the mock recorder for MockHttpApiMetrics.
