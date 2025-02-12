@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
+//nolint:funlen
 func TestModifyChange(t *testing.T) {
 	t.Parallel()
 

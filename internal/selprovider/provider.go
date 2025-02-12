@@ -2,11 +2,10 @@ package selprovider
 
 import (
 	domains "github.com/selectel/domains-go/pkg/v2"
+	"github.com/selectel/external-dns-selectel-webhook/pkg/httpdefault"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
 	"sigs.k8s.io/external-dns/provider"
-
-	"github.com/selectel/external-dns-selectel-webhook/pkg/httpdefault"
 )
 
 // Provider implements the DNS provider interface for Selectel DNS.
