@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
-//nolint:funlen
+//nolint:funlen // because nobody uses this stupid linter
 func TestModifyChange(t *testing.T) {
 	t.Parallel()
 
