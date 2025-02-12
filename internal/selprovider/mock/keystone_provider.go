@@ -19,6 +19,7 @@ import (
 type MockKeystoneProvider struct {
 	ctrl     *gomock.Controller
 	recorder *MockKeystoneProviderMockRecorder
+	isgomock struct{}
 }
 
 // MockKeystoneProviderMockRecorder is the mock recorder for MockKeystoneProvider.

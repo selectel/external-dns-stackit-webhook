@@ -5,57 +5,118 @@ import (
 	"testing"
 
 	domains "github.com/selectel/domains-go/pkg/v2"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
 )
 
-func TestAppendDotIfNotExists(t *testing.T) {
+func TestModifyChange(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		s    string
-		want string
+		ep   *endpoint.Endpoint
+		want *endpoint.Endpoint
 	}{
-		{"No dot at end", "test", "test."},
-		{"Dot at end", "test.", "test."},
+		{
+			name: "trailing dot in DNSName",
+			ep: &endpoint.Endpoint{
+				DNSName:    "example.com",
+				RecordType: "A",
+				Targets:    []string{"1.2.3.4"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "A",
+				Targets:    []string{"1.2.3.4"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
+		{
+			name: "ttl added",
+			ep: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "A",
+				Targets:    []string{"1.2.3.4"},
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "A",
+				Targets:    []string{"1.2.3.4"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
+		{
+			name: "trailing dot in CNAME targets",
+			ep: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "CNAME",
+				Targets:    []string{"sub.example.com"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "CNAME",
+				Targets:    []string{"sub.example.com."},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
+		{
+			name: "trailing dot in ALIAS targets",
+			ep: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "ALIAS",
+				Targets:    []string{"sub.example.com"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "ALIAS",
+				Targets:    []string{"sub.example.com."},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
+		{
+			name: "trailing dot in MX targets",
+			ep: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "MX",
+				Targets:    []string{"mail.example.com"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "example.com.",
+				RecordType: "MX",
+				Targets:    []string{"mail.example.com."},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
+		{
+			name: "trailing dot in SRV targets",
+			ep: &endpoint.Endpoint{
+				DNSName:    "_xmpp._tcp.example.com.",
+				RecordType: "SRV",
+				Targets:    []string{"sub.example.com"},
+				RecordTTL:  endpoint.TTL(300),
+			},
+			want: &endpoint.Endpoint{
+				DNSName:    "_xmpp._tcp.example.com.",
+				RecordType: "SRV",
+				Targets:    []string{"sub.example.com."},
+				RecordTTL:  endpoint.TTL(300),
+			},
+		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := appendDotIfNotExists(tt.s); got != tt.want {
-				t.Errorf("appendDotIfNotExists() = %v, want %v", got, tt.want)
-			}
+			modifyChange(tc.ep)
+			assert.EqualValues(t, tc.want, tc.ep)
 		})
-	}
-}
-
-func TestModifyChange(t *testing.T) {
-	t.Parallel()
-
-	endpointWithTTL := &endpoint.Endpoint{
-		DNSName:   "test",
-		RecordTTL: endpoint.TTL(400),
-	}
-	modifyChange(endpointWithTTL)
-	if endpointWithTTL.DNSName != "test." {
-		t.Errorf("modifyChange() did not append dot to DNSName = %v, want test.", endpointWithTTL.DNSName)
-	}
-	if endpointWithTTL.RecordTTL != 400 {
-		t.Errorf("modifyChange() changed existing RecordTTL = %v, want 400", endpointWithTTL.RecordTTL)
-	}
-
-	endpointWithoutTTL := &endpoint.Endpoint{
-		DNSName: "test",
-	}
-	modifyChange(endpointWithoutTTL)
-	if endpointWithoutTTL.DNSName != "test." {
-		t.Errorf("modifyChange() did not append dot to DNSName = %v, want test.", endpointWithoutTTL.DNSName)
-	}
-	if endpointWithoutTTL.RecordTTL != 300 {
-		t.Errorf("modifyChange() did not set default RecordTTL = %v, want 300", endpointWithoutTTL.RecordTTL)
 	}
 }
 

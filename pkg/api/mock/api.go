@@ -23,6 +23,7 @@ import (
 type MockApi struct {
 	ctrl     *gomock.Controller
 	recorder *MockApiMockRecorder
+	isgomock struct{}
 }
 
 // MockApiMockRecorder is the mock recorder for MockApi.
@@ -80,6 +81,7 @@ func (mr *MockApiMockRecorder) Test(req any, msTimeout ...any) *gomock.Call {
 type MockProvider struct {
 	ctrl     *gomock.Controller
 	recorder *MockProviderMockRecorder
+	isgomock struct{}
 }
 
 // MockProviderMockRecorder is the mock recorder for MockProvider.
@@ -100,11 +102,12 @@ func (m *MockProvider) EXPECT() *MockProviderMockRecorder {
 }
 
 // AdjustEndpoints mocks base method.
-func (m *MockProvider) AdjustEndpoints(endpoints []*endpoint.Endpoint) []*endpoint.Endpoint {
+func (m *MockProvider) AdjustEndpoints(endpoints []*endpoint.Endpoint) ([]*endpoint.Endpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AdjustEndpoints", endpoints)
 	ret0, _ := ret[0].([]*endpoint.Endpoint)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AdjustEndpoints indicates an expected call of AdjustEndpoints.
@@ -128,10 +131,10 @@ func (mr *MockProviderMockRecorder) ApplyChanges(ctx, changes any) *gomock.Call 
 }
 
 // GetDomainFilter mocks base method.
-func (m *MockProvider) GetDomainFilter() endpoint.DomainFilter {
+func (m *MockProvider) GetDomainFilter() endpoint.DomainFilterInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDomainFilter")
-	ret0, _ := ret[0].(endpoint.DomainFilter)
+	ret0, _ := ret[0].(endpoint.DomainFilterInterface)
 	return ret0
 }
 

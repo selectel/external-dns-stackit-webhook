@@ -6,6 +6,7 @@ import (
 	domains "github.com/selectel/domains-go/pkg/v2"
 	"go.uber.org/zap"
 	"sigs.k8s.io/external-dns/endpoint"
+	"sigs.k8s.io/external-dns/provider"
 )
 
 // findBestMatchingZone finds the best matching zone for a given record set name. The criteria are
@@ -15,7 +16,7 @@ func findBestMatchingZone(rrSetName string, zones []*domains.Zone) (*domains.Zon
 	count := 0
 	var domainZone *domains.Zone
 	for _, zone := range zones {
-		if len(zone.Name) > count && strings.Contains(appendDotIfNotExists(rrSetName), zone.Name) {
+		if len(zone.Name) > count && strings.Contains(provider.EnsureTrailingDot(rrSetName), zone.Name) {
 			count = len(zone.Name)
 			domainZone = zone
 		}
@@ -39,21 +40,20 @@ func findRRSet(rrSetName, recordType string, rrSets []*domains.RRSet) (*domains.
 	return nil, false
 }
 
-// appendDotIfNotExists appends a dot to the end of a string if it doesn't already end with a dot.
-func appendDotIfNotExists(s string) string {
-	if !strings.HasSuffix(s, ".") {
-		return s + "."
+// modifyChange modifies a change to ensure it is valid for this provider.
+func modifyChange(ep *endpoint.Endpoint) {
+	ep.DNSName = provider.EnsureTrailingDot(ep.DNSName)
+
+	if ep.RecordTTL == 0 {
+		ep.RecordTTL = 300
 	}
 
-	return s
-}
-
-// modifyChange modifies a change to ensure it is valid for this provider.
-func modifyChange(change *endpoint.Endpoint) {
-	change.DNSName = appendDotIfNotExists(change.DNSName)
-
-	if change.RecordTTL == 0 {
-		change.RecordTTL = 300
+	// ensure that each target in CNAME,ALIAS,MX and SRV records has a trailing
+	// dot
+	if ep.RecordType == "CNAME" || ep.RecordType == "ALIAS" || ep.RecordType == "MX" || ep.RecordType == "SRV" {
+		for idx, t := range ep.Targets {
+			ep.Targets[idx] = provider.EnsureTrailingDot(t)
+		}
 	}
 }
 
